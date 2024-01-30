@@ -6,9 +6,13 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include "Renderer.h"
+#include "IndexBuffer.h"
+#include "VertexBuffer.h"
+
 // 断言
 #define ASSERT(x) if(!(x)) __debugbreak();
-// 精准定位
+// 错误检查 精准定位
 #define GLCall(x) GLClearError();\
     x;\
     ASSERT(GLLogCall(#x, __FILE__, __LINE__))
@@ -165,20 +169,16 @@ int main(void)
     GLCall(glGenVertexArrays(1, &vao));
     GLCall(glBindVertexArray(vao));
 
-    unsigned int buffer;
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 2 * 4 * sizeof(float), positions, GL_STATIC_DRAW);
+    VertexBuffer vb(positions, 4 * 2 * sizeof(float));
+    
     
     //检查是否启动顶点属性
     glEnableVertexAttribArray(0);
 
     glVertexAttribPointer(0, 2,GL_FLOAT, GL_FALSE, 8, 0);
 
-    unsigned int ibo;
-    glGenBuffers(1, &ibo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * 2 * sizeof(float), indices, GL_STATIC_DRAW);
+    IndexBuffer ib(indices, 6);
+    
 
     ShaderProgramSource source = ParserShader("res/shaders/Basic.shader");
     //std::cout << "Vertex" << std::endl;
@@ -212,7 +212,7 @@ int main(void)
         GLCall(GLCall(glUniform4f(location, r, 0.3f, 0.8f, 1.0f)));
 
         GLCall(glBindVertexArray(vao));
-        GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo));
+        ib.Bind();
 
         // 画
         GLCall(glDrawElements(GL_TRIANGLES, 2 * 3, GL_UNSIGNED_INT, nullptr));
